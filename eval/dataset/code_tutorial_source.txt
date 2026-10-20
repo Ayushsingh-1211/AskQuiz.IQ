@@ -1,0 +1,20 @@
+Title: Fig Coding Tutorial
+
+Source page: https://commons.wikimedia.org/wiki/File:Fig-Coding-Tutorial.webm
+Creator: As credited on the Wikimedia Commons source page.
+
+Licence: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+Licence URL: https://creativecommons.org/licenses/by-sa/4.0/
+
+Original format: WebM
+Evaluation format: MP4
+Original duration: Approximately 22 minutes 54 seconds
+Evaluation clip duration: 8 minutes
+Video codec: H.264
+Audio: No audio stream was present in the downloaded source.
+
+Changes: An 8-minute segment was trimmed and converted to 480p MP4 for evaluation storage. The original WebM source has been retained.
+
+Captions: The source player's CC control did not work during verification. A separate usable caption file has not been confirmed.
+
+Attribution note: Reuse under CC BY-SA 4.0. Credit the creator, link to the licence, identify modifications, and apply compatible ShareAlike terms when distributing an adaptation. No endorsement of AskQuiz.IQ by the creator is implied.

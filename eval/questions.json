@@ -1,0 +1,76 @@
+[
+  {
+    "id": "q1",
+    "video_title": "Talking Teacher",
+    "pause_t": 15.0,
+    "question": "What is the topic introduced at the start?",
+    "expected_covered": true
+  },
+  {
+    "id": "q2",
+    "video_title": "Talking Teacher",
+    "pause_t": 5.0,
+    "question": "What will be concluded at the end of the lecture?",
+    "expected_covered": false,
+    "expected_refusal": true
+  },
+  {
+    "id": "q3",
+    "video_title": "Talking Teacher",
+    "pause_t": 30.0,
+    "question": "Explain the concept discussed in the first thirty seconds.",
+    "expected_covered": true
+  },
+  {
+    "id": "q4",
+    "video_title": "Talking Teacher",
+    "pause_t": 10.0,
+    "question": "What advanced topic is discussed at minute 4?",
+    "expected_covered": false,
+    "expected_refusal": true
+  },
+  {
+    "id": "q5",
+    "video_title": "Talking Teacher",
+    "pause_t": 45.0,
+    "question": "Can you summarize what was spoken so far?",
+    "expected_covered": true
+  },
+  {
+    "id": "q6",
+    "video_title": "Talking Teacher",
+    "pause_t": 12.0,
+    "question": "What is the main definition given right now?",
+    "expected_covered": true
+  },
+  {
+    "id": "q7",
+    "video_title": "Talking Teacher",
+    "pause_t": 20.0,
+    "question": "What happens after minute 2?",
+    "expected_covered": false,
+    "expected_refusal": true
+  },
+  {
+    "id": "q8",
+    "video_title": "Talking Teacher",
+    "pause_t": 60.0,
+    "question": "What example was provided by the speaker?",
+    "expected_covered": true
+  },
+  {
+    "id": "q9",
+    "video_title": "Talking Teacher",
+    "pause_t": 8.0,
+    "question": "Tell me about the final exam requirements mentioned at the end.",
+    "expected_covered": false,
+    "expected_refusal": true
+  },
+  {
+    "id": "q10",
+    "video_title": "Talking Teacher",
+    "pause_t": 40.0,
+    "question": "Where was the core term defined in the video?",
+    "expected_covered": true
+  }
+]

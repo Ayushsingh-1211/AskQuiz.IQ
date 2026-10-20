@@ -1,0 +1,17 @@
+Title: Wikipedia in Education (1 of 12): Why do you teach Wikipedia?
+
+Creator / author: VGrigas (WMF)
+Source page: https://commons.wikimedia.org/wiki/File:Wikipedia_in_Education_(1_of_12)_Why_do_you_teach_Wikipedia%3F.webm
+
+Licence: Creative Commons Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0)
+Licence URL: https://creativecommons.org/licenses/by-sa/3.0/
+
+Media format: MP4 (transcoded from original WebM)
+Duration: Approximately 6 minutes 14 seconds
+Video codec: H.264
+Audio codec: AAC
+Captions: Separate English SRT subtitle file from Wikimedia Commons.
+
+Changes: Video transcoded and downscaled to 480p for evaluation storage. English subtitle file downloaded separately; its local filename was standardized.
+
+Attribution note: Reused under CC BY-SA 3.0. Attribution is provided for the original work; no endorsement of AskQuiz.IQ by Wikimedia Foundation is implied.

@@ -1,0 +1,6 @@
+## $0 deployment
+Local Docker Postgres+pgvector, `DATA_DIR` on disk, Gemini free tier (check limits at aistudio.google.com/rate-limit; names/limits change, keep in config), Cloudflare Tunnel (or ngrok) to the laptop, frontend on Vercel hobby or local Vite. Auth = FastAPI JWT with 2-3 users + user_id checks (replaces Supabase Auth/RLS). Playback = FastAPI signed token + Range. Keep calls low: pre-ingest demo videos, OCR-first, vision cap 100/video, skip rewrite when no history, cache by content hash, interviews 10 min/~8 turns, "Free quota reached, retrying in Xs" / retrieval-only mode. No private data (free tier may train on prompts). Config keys: LLM_PROVIDER, ANSWER_MODEL, VISION_MODEL, LLM_FALLBACK_CHAIN, DATABASE_URL, DATA_DIR.
+
+## Gates (verbatim)
+M0 Self-check green on the hosted box | M1 Playback with seek; blocked YouTube URL still usable | M2 TAC unit tests pass; exact-word cut works | M3 10-question text eval passes; spoiler leak = 0 | M4 Correct time sent on desktop and mobile | M5 Screen-only and silent-teacher tests pass | M6 PDF/PPT citations appear only after unlock | M7 Quiz questions cite sources; no templates | M8 Follow-ups depend on prior answers; explained scorecard | M9 All Section 8 targets recorded; fresh-clone setup works.
+Cut line: M0-M6 + eval are the core; M7-M8 (quiz, interview) must really work for the 2X reward.

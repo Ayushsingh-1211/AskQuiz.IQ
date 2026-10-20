@@ -1,0 +1,702 @@
+[
+ {
+  "path": "pyproject.toml",
+  "step": "M0",
+  "purpose": "Python deps + tool config (fastapi, pydantic, psycopg, faster-whisper, opencv, pytesseract, pymupdf, python-pptx, yt-dlp, sentence-transformers, google-genai, pytest)"
+ },
+ {
+  "path": "Makefile",
+  "step": "M0",
+  "purpose": "Shortcuts: db-up, api, worker, web, test, eval, health"
+ },
+ {
+  "path": "infra/docker-compose.yml",
+  "step": "M0",
+  "purpose": "Local Postgres + pgvector service only (api/worker run on host in $0 mode)"
+ },
+ {
+  "path": "infra/Dockerfile",
+  "step": "M0",
+  "purpose": "Single image for api+worker (used only for the optional upgrade path)"
+ },
+ {
+  "path": "infra/scripts/preflight.py",
+  "step": "M0",
+  "purpose": "Checks ffmpeg, ffprobe, Tesseract eng+hin, DB, DATA_DIR write, Gemini key, embed model; exit 1 on failure"
+ },
+ {
+  "path": "infra/scripts/start_all.ps1",
+  "step": "M0",
+  "purpose": "Windows: start db, api, worker, tunnel"
+ },
+ {
+  "path": "infra/scripts/start_all.sh",
+  "step": "M0",
+  "purpose": "Linux/macOS twin of start_all.ps1"
+ },
+ {
+  "path": "apps/api/app/__init__.py",
+  "step": "M0",
+  "purpose": "package marker"
+ },
+ {
+  "path": "apps/api/app/main.py",
+  "step": "M0",
+  "purpose": "FastAPI app, CORS allow-list, error handlers, router wiring, startup self-check"
+ },
+ {
+  "path": "apps/api/app/config.py",
+  "step": "M0",
+  "purpose": "Single Settings class (pydantic-settings) for every env key; no hard-coded paths or model names"
+ },
+ {
+  "path": "apps/api/app/errors.py",
+  "step": "M0",
+  "purpose": "One error format {code,message,hint,request_id}"
+ },
+ {
+  "path": "apps/api/app/logging.py",
+  "step": "M0",
+  "purpose": "Structured JSON logs with request ID middleware"
+ },
+ {
+  "path": "apps/api/app/deps.py",
+  "step": "M0",
+  "purpose": "DB connection dependency, current-user dependency, rate limiter"
+ },
+ {
+  "path": "apps/api/app/auth.py",
+  "step": "M0",
+  "purpose": "$0 auth: login endpoint, JWT, 2-3 pre-created users, user_id owner checks"
+ },
+ {
+  "path": "apps/api/app/db/__init__.py",
+  "step": "M0",
+  "purpose": "package marker"
+ },
+ {
+  "path": "apps/api/app/db/session.py",
+  "step": "M0",
+  "purpose": "Postgres pool + migration runner"
+ },
+ {
+  "path": "apps/api/app/db/migrations/001_init.sql",
+  "step": "M0",
+  "purpose": "extensions (vector), users, videos, jobs, documents, chat_sessions, messages(pause_t), interviews, interview_turns, eval_runs"
+ },
+ {
+  "path": "apps/api/app/routes/__init__.py",
+  "step": "M0",
+  "purpose": "package marker"
+ },
+ {
+  "path": "apps/api/app/routes/health.py",
+  "step": "M0",
+  "purpose": "GET /api/v1/health returns self-check results"
+ },
+ {
+  "path": "apps/api/app/schemas/__init__.py",
+  "step": "M0",
+  "purpose": "package marker"
+ },
+ {
+  "path": "apps/api/app/schemas/common.py",
+  "step": "M0",
+  "purpose": "Shared Pydantic types: ErrorOut, Citation, SourceRef"
+ },
+ {
+  "path": "tests/conftest.py",
+  "step": "M0",
+  "purpose": "Test DB fixture, sample video fixture, client fixture"
+ },
+ {
+  "path": ".github/workflows/ci.yml",
+  "step": "M0",
+  "purpose": "CI: pytest + web build on push"
+ },
+ {
+  "path": "infra/scripts/seed_users.py",
+  "step": "M0",
+  "purpose": "Create the 2-3 demo users (hashed passwords) from env/CLI"
+ },
+ {
+  "path": "infra/scripts/seed_demo.py",
+  "step": "M9",
+  "purpose": "Pre-load/ingest the demo library videos (mode C) before the demo"
+ },
+ {
+  "path": "eval/wer.py",
+  "step": "M9",
+  "purpose": "Word error rate on the Hinglish clip (measured, not assumed)"
+ },
+ {
+  "path": "apps/web/src/__tests__/askbox.test.tsx",
+  "step": "M4",
+  "purpose": "Vitest: request body pause_t equals the player time at send moment; input focus pauses"
+ },
+ {
+  "path": "apps/api/app/storage.py",
+  "step": "M1",
+  "purpose": "DATA_DIR abstraction, signed short-lived playback tokens, HTTP Range streaming"
+ },
+ {
+  "path": "apps/api/app/routes/videos.py",
+  "step": "M1",
+  "purpose": "POST /videos, GET /videos/{id}, GET /videos/{id}/stream"
+ },
+ {
+  "path": "apps/api/app/schemas/video.py",
+  "step": "M1",
+  "purpose": "Video, VideoStatus (stage + flags like visual_unavailable)"
+ },
+ {
+  "path": "apps/worker/__init__.py",
+  "step": "M1",
+  "purpose": "package marker"
+ },
+ {
+  "path": "apps/worker/runner.py",
+  "step": "M1",
+  "purpose": "Worker loop: claim job (FOR UPDATE SKIP LOCKED), run stage, retry with backoff, update status"
+ },
+ {
+  "path": "apps/worker/jobs.py",
+  "step": "M1",
+  "purpose": "Job table helpers, stage order, idempotency by content hash"
+ },
+ {
+  "path": "apps/worker/stages/__init__.py",
+  "step": "M1",
+  "purpose": "package marker"
+ },
+ {
+  "path": "apps/worker/stages/fetch.py",
+  "step": "M1",
+  "purpose": "Validate with ffprobe, sha256 dedupe, yt-dlp with 3 retries, captions-only fallback"
+ },
+ {
+  "path": "apps/worker/stages/audio.py",
+  "step": "M1",
+  "purpose": "16 kHz mono wav + 720p H.264 faststart proxy MP4"
+ },
+ {
+  "path": "tests/test_intake.py",
+  "step": "M1",
+  "purpose": "Upload, dedupe, Range 206, blocked-YouTube fallback"
+ },
+ {
+  "path": "apps/api/app/db/migrations/002_chunks.sql",
+  "step": "M2",
+  "purpose": "chunks table, hnsw + gin + (video_id, visible_from_s) indexes"
+ },
+ {
+  "path": "apps/worker/stages/asr.py",
+  "step": "M2",
+  "purpose": "Captions first, faster-whisper small int8 + VAD + word timestamps otherwise; cache by hash"
+ },
+ {
+  "path": "apps/worker/stages/chunk.py",
+  "step": "M2",
+  "purpose": "15-20 s windows with overlap, word-map in meta, visible_from_s = end_s"
+ },
+ {
+  "path": "apps/worker/stages/embed.py",
+  "step": "M2",
+  "purpose": "Embed chunks (e5 'passage: ' prefix) and write to chunks.embedding"
+ },
+ {
+  "path": "core/__init__.py",
+  "step": "M2",
+  "purpose": "package marker"
+ },
+ {
+  "path": "core/embeddings.py",
+  "step": "M2",
+  "purpose": "multilingual-e5-small loader; query:/passage: prefixes; batch encode"
+ },
+ {
+  "path": "core/chunking.py",
+  "step": "M2",
+  "purpose": "Pure functions: window words into chunks, keep word mapping"
+ },
+ {
+  "path": "core/tac.py",
+  "step": "M2",
+  "purpose": "TAC: SQL visibility clause, trim_at_word, recent_window, assert_no_future(context_pack, pause_t)"
+ },
+ {
+  "path": "tests/test_tac.py",
+  "step": "M2",
+  "purpose": "TAC unit tests incl. exact-word cut and pause at 0:10"
+ },
+ {
+  "path": "tests/test_chunking.py",
+  "step": "M2",
+  "purpose": "Chunk size, overlap and word mapping tests"
+ },
+ {
+  "path": "core/llm/__init__.py",
+  "step": "M3",
+  "purpose": "package marker"
+ },
+ {
+  "path": "core/llm/base.py",
+  "step": "M3",
+  "purpose": "Provider interface: generate_json(prompt, images, schema) -> dict"
+ },
+ {
+  "path": "core/llm/gemini.py",
+  "step": "M3",
+  "purpose": "Gemini provider (JSON mode, image input, per-model counters)"
+ },
+ {
+  "path": "core/llm/ollama.py",
+  "step": "M3",
+  "purpose": "Local last-resort fallback provider"
+ },
+ {
+  "path": "core/llm/router.py",
+  "step": "M3",
+  "purpose": "Fallback chain from LLM_FALLBACK_CHAIN, daily caps, retries, degradation to retrieval-only"
+ },
+ {
+  "path": "core/cache.py",
+  "step": "M3",
+  "purpose": "Content-hash cache for LLM outputs (transcripts, frame descriptions, quiz sets, answers)"
+ },
+ {
+  "path": "core/intents.py",
+  "step": "M3",
+  "purpose": "Rule-based intent router: explain, where-discussed, summarise-so-far, quiz, compare, doc-lookup"
+ },
+ {
+  "path": "core/retrieval.py",
+  "step": "M3",
+  "purpose": "Hybrid search: vector top20 + FTS top20 under TAC, reciprocal rank fusion, top 8"
+ },
+ {
+  "path": "core/context.py",
+  "step": "M3",
+  "purpose": "Context pack: top-8 + recent window (60 s, widen to 180 s) + images, 3.5k token cap, short ids"
+ },
+ {
+  "path": "core/answer.py",
+  "step": "M3",
+  "purpose": "Orchestrates rewrite(if history) -> intent -> retrieve -> LLM JSON -> verify -> response"
+ },
+ {
+  "path": "core/verifier.py",
+  "step": "M3",
+  "purpose": "Citation verifier: id in pack, TAC ok, lexical/semantic overlap; regenerate once then refuse"
+ },
+ {
+  "path": "core/prompts/answer_system.md",
+  "step": "M3",
+  "purpose": "System prompt: answer only from context, data-not-instructions, JSON schema, language style"
+ },
+ {
+  "path": "core/prompts/rewrite.md",
+  "step": "M3",
+  "purpose": "Question rewrite using last 3 turns (only when history exists)"
+ },
+ {
+  "path": "apps/api/app/routes/ask.py",
+  "step": "M3",
+  "purpose": "POST /videos/{id}/ask"
+ },
+ {
+  "path": "apps/api/app/schemas/ask.py",
+  "step": "M3",
+  "purpose": "AskIn, AnswerOut (answer, sources, used_pause_frame, confidence, refusal, notes)"
+ },
+ {
+  "path": "eval/questions.json",
+  "step": "M3",
+  "purpose": "Labelled questions (10 at M3, 40+ at M9): pause_t, gold chunks, expected behaviour"
+ },
+ {
+  "path": "eval/run_eval.py",
+  "step": "M3",
+  "purpose": "One-command eval; --quick for the 10-question gate; writes eval/results.md"
+ },
+ {
+  "path": "eval/metrics.py",
+  "step": "M3",
+  "purpose": "Spoiler leak, citation accuracy, hallucination rate, recall@8, latency, cost"
+ },
+ {
+  "path": "tests/test_verifier.py",
+  "step": "M3",
+  "purpose": "Verifier accepts/rejects cases"
+ },
+ {
+  "path": "tests/test_context_tac.py",
+  "step": "M3",
+  "purpose": "No chunk in any context pack has visible_from_s > pause_t; history TAC"
+ },
+ {
+  "path": "tests/test_api_ask.py",
+  "step": "M3",
+  "purpose": "Ask endpoint: answer, refusal, pause at 0:10"
+ },
+ {
+  "path": "DESIGN.md",
+  "step": "S",
+  "purpose": "Design system from Stitch (colors, type, spacing, components); read by Antigravity"
+ },
+ {
+  "path": "design/README.md",
+  "step": "S",
+  "purpose": "Drop Stitch HTML/CSS exports here: library, watch, interview-setup, interview-live, scorecard"
+ },
+ {
+  "path": "apps/web/package.json",
+  "step": "M4",
+  "purpose": "React 18 + TS + Vite deps"
+ },
+ {
+  "path": "apps/web/vite.config.ts",
+  "step": "M4",
+  "purpose": "Vite config, dev proxy to API"
+ },
+ {
+  "path": "apps/web/tsconfig.json",
+  "step": "M4",
+  "purpose": "strict TS config"
+ },
+ {
+  "path": "apps/web/index.html",
+  "step": "M4",
+  "purpose": "Vite entry"
+ },
+ {
+  "path": "apps/web/.env.example",
+  "step": "M4",
+  "purpose": "VITE_API_URL"
+ },
+ {
+  "path": "apps/web/src/main.tsx",
+  "step": "M4",
+  "purpose": "React entry"
+ },
+ {
+  "path": "apps/web/src/App.tsx",
+  "step": "M4",
+  "purpose": "Routes: login, library, upload, watch/:id, interview pages"
+ },
+ {
+  "path": "apps/web/src/styles/tokens.css",
+  "step": "M4",
+  "purpose": "CSS variables from DESIGN.md"
+ },
+ {
+  "path": "apps/web/src/api/client.ts",
+  "step": "M4",
+  "purpose": "Typed fetch wrapper, JWT, error format handling"
+ },
+ {
+  "path": "apps/web/src/api/types.ts",
+  "step": "M4",
+  "purpose": "Types mirroring API schemas"
+ },
+ {
+  "path": "apps/web/src/hooks/useAuth.ts",
+  "step": "M4",
+  "purpose": "Login state"
+ },
+ {
+  "path": "apps/web/src/hooks/usePlayerTime.ts",
+  "step": "M4",
+  "purpose": "Read current time at send moment (not only on pause)"
+ },
+ {
+  "path": "apps/web/src/pages/Login.tsx",
+  "step": "M4",
+  "purpose": "Login page"
+ },
+ {
+  "path": "apps/web/src/pages/Library.tsx",
+  "step": "M4",
+  "purpose": "Video library + ingestion progress per stage"
+ },
+ {
+  "path": "apps/web/src/pages/Upload.tsx",
+  "step": "M4",
+  "purpose": "File upload and YouTube URL"
+ },
+ {
+  "path": "apps/web/src/pages/Watch.tsx",
+  "step": "M4",
+  "purpose": "Player left, chat right, unlocked-up-to bar"
+ },
+ {
+  "path": "apps/web/src/components/Player.tsx",
+  "step": "M4",
+  "purpose": "Chooses YouTube or HTML5 player; exposes getCurrentTime/seek/pause"
+ },
+ {
+  "path": "apps/web/src/components/YouTubePlayer.tsx",
+  "step": "M4",
+  "purpose": "YouTube IFrame API wrapper"
+ },
+ {
+  "path": "apps/web/src/components/Html5Player.tsx",
+  "step": "M4",
+  "purpose": "HTML5 video with signed stream URL"
+ },
+ {
+  "path": "apps/web/src/components/ChatPanel.tsx",
+  "step": "M4",
+  "purpose": "Messages, answer rendering, refusal and low-confidence notes"
+ },
+ {
+  "path": "apps/web/src/components/AskBox.tsx",
+  "step": "M4",
+  "purpose": "Pauses video on focus, shows 'Asking at mm:ss', sends current time"
+ },
+ {
+  "path": "apps/web/src/components/CitationChip.tsx",
+  "step": "M4",
+  "purpose": "Clickable chip: seek player or open page/slide"
+ },
+ {
+  "path": "apps/web/src/components/UnlockBar.tsx",
+  "step": "M4",
+  "purpose": "Shows 'unlocked up to mm:ss'"
+ },
+ {
+  "path": "apps/web/src/components/QuickActions.tsx",
+  "step": "M4",
+  "purpose": "Explain simply, Example, Where was this?, Summary so far, Quiz me, Compare"
+ },
+ {
+  "path": "apps/web/src/components/IngestProgress.tsx",
+  "step": "M4",
+  "purpose": "Stage-by-stage progress with next-step error hints"
+ },
+ {
+  "path": "apps/worker/stages/frames.py",
+  "step": "M5",
+  "purpose": "Candidate every 2 s, phash + OCR-new-words change test, 5 s min gap, 60 s heartbeat, ~300/h cap"
+ },
+ {
+  "path": "apps/worker/stages/ocr.py",
+  "step": "M5",
+  "purpose": "Tesseract eng+hin on kept frames, store confidence"
+ },
+ {
+  "path": "apps/worker/stages/vision.py",
+  "step": "M5",
+  "purpose": "Vision-describe only when OCR thin/diagram/handwriting; cap per video; cache"
+ },
+ {
+  "path": "core/pause_frame.py",
+  "step": "M5",
+  "purpose": "Extract exact frame at pause_t with ffmpeg from stored video"
+ },
+ {
+  "path": "core/prompts/vision_describe.md",
+  "step": "M5",
+  "purpose": "Prompt for describing a frame (text as data, no guessing)"
+ },
+ {
+  "path": "tests/test_frames.py",
+  "step": "M5",
+  "purpose": "Frame selection, screen-only and silent-teacher cases"
+ },
+ {
+  "path": "apps/worker/stages/docs.py",
+  "step": "M6",
+  "purpose": "PyMuPDF, python-pptx (+notes), Tesseract for scans, per page/slide chunks"
+ },
+ {
+  "path": "apps/worker/stages/align.py",
+  "step": "M6",
+  "purpose": "visible_from_s for aligned docs: max(tau, 0.9*best) similarity; permitted = 0"
+ },
+ {
+  "path": "apps/api/app/routes/documents.py",
+  "step": "M6",
+  "purpose": "POST /videos/{id}/documents (file + mode)"
+ },
+ {
+  "path": "apps/web/src/components/DocUpload.tsx",
+  "step": "M6",
+  "purpose": "Upload PDF/PPT/notes, choose permitted or aligned"
+ },
+ {
+  "path": "tests/test_alignment.py",
+  "step": "M6",
+  "purpose": "Alignment and unlock-timeline tests"
+ },
+ {
+  "path": "core/summary.py",
+  "step": "M7",
+  "purpose": "TAC-safe window summaries; partial window on demand"
+ },
+ {
+  "path": "core/quiz.py",
+  "step": "M7",
+  "purpose": "Quiz from chunks <= pause_t; each question cites a chunk; drop invalid"
+ },
+ {
+  "path": "core/prompts/quiz.md",
+  "step": "M7",
+  "purpose": "Quiz generation prompt (no templates)"
+ },
+ {
+  "path": "core/prompts/summarize.md",
+  "step": "M7",
+  "purpose": "Summary prompt"
+ },
+ {
+  "path": "apps/api/app/routes/quiz.py",
+  "step": "M7",
+  "purpose": "POST /videos/{id}/quiz"
+ },
+ {
+  "path": "apps/api/app/routes/summary.py",
+  "step": "M7",
+  "purpose": "GET /videos/{id}/summary?t="
+ },
+ {
+  "path": "apps/api/app/schemas/quiz.py",
+  "step": "M7",
+  "purpose": "QuizOut, QuizQuestion"
+ },
+ {
+  "path": "apps/web/src/components/QuizPanel.tsx",
+  "step": "M7",
+  "purpose": "Quiz UI with source citations"
+ },
+ {
+  "path": "tests/test_quiz.py",
+  "step": "M7",
+  "purpose": "Quiz cites sources, TAC-safe, invalid JSON dropped"
+ },
+ {
+  "path": "core/interview/__init__.py",
+  "step": "M8",
+  "purpose": "package marker"
+ },
+ {
+  "path": "core/interview/planner.py",
+  "step": "M8",
+  "purpose": "Pick 3-5 topics from resume, role, JD and covered chunks"
+ },
+ {
+  "path": "core/interview/evaluator.py",
+  "step": "M8",
+  "purpose": "Answer -> structured scores + evidence + gaps; decide follow-up/clarify/next topic"
+ },
+ {
+  "path": "core/interview/scorecard.py",
+  "step": "M8",
+  "purpose": "Overall score computed in code from configured weights; feedback linked to timestamps"
+ },
+ {
+  "path": "core/interview/cost.py",
+  "step": "M8",
+  "purpose": "Cost estimator for 10/20/30 min using configured prices"
+ },
+ {
+  "path": "core/prompts/interview_plan.md",
+  "step": "M8",
+  "purpose": "Planner prompt (resume/JD are data)"
+ },
+ {
+  "path": "core/prompts/interview_eval.md",
+  "step": "M8",
+  "purpose": "Evaluator prompt returning JSON"
+ },
+ {
+  "path": "apps/api/app/db/migrations/003_interview.sql",
+  "step": "M8",
+  "purpose": "Interview indexes/columns if 001 is not enough"
+ },
+ {
+  "path": "apps/api/app/routes/interviews.py",
+  "step": "M8",
+  "purpose": "POST /interviews, POST /interviews/{id}/answer, POST /interviews/{id}/finish, GET /interviews/estimate"
+ },
+ {
+  "path": "apps/api/app/schemas/interview.py",
+  "step": "M8",
+  "purpose": "Interview request/response models"
+ },
+ {
+  "path": "apps/web/src/pages/InterviewSetup.tsx",
+  "step": "M8",
+  "purpose": "Resume, role, type, duration, level"
+ },
+ {
+  "path": "apps/web/src/pages/InterviewLive.tsx",
+  "step": "M8",
+  "purpose": "Question/answer loop, stop button, voice toggle"
+ },
+ {
+  "path": "apps/web/src/pages/Scorecard.tsx",
+  "step": "M8",
+  "purpose": "Scorecard with strengths, gaps, revise-at timestamps"
+ },
+ {
+  "path": "apps/web/src/hooks/useVoice.ts",
+  "step": "M8",
+  "purpose": "Web Speech API STT/TTS with text fallback"
+ },
+ {
+  "path": "tests/test_interview.py",
+  "step": "M8",
+  "purpose": "Follow-up depends on previous answer; overall score computed in code; caps"
+ },
+ {
+  "path": "eval/dataset/README.md",
+  "step": "M9",
+  "purpose": "What goes in dataset/: 3 core videos, board video, Hinglish clip, PDF, PPT, notes"
+ },
+ {
+  "path": "docs/architecture.md",
+  "step": "M9",
+  "purpose": "Architecture diagram (Mermaid) + short explanation"
+ },
+ {
+  "path": "docs/api.md",
+  "step": "M9",
+  "purpose": "Endpoint list with examples (from OpenAPI)"
+ },
+ {
+  "path": "docs/DEMO.md",
+  "step": "M9",
+  "purpose": "Demo script, pre-ingest list, fallback video plan"
+ },
+ {
+  "path": "README.md",
+  "step": "M9",
+  "purpose": "Fresh-clone setup on Windows, run, test, eval"
+ },
+ {
+  "path": "infra/deploy.md",
+  "step": "M9",
+  "purpose": "$0 deployment: Docker db, tunnel, Vercel, CORS; upgrade path"
+ },
+ {
+  "path": "eval/results.md",
+  "step": "M9",
+  "purpose": "Generated by run_eval.py"
+ },
+ {
+  "path": "infra/tunnel/README.md",
+  "step": "H",
+  "purpose": "Cloudflare Tunnel (or ngrok) commands and URL notes"
+ },
+ {
+  "path": "infra/scripts/public_smoke.py",
+  "step": "H",
+  "purpose": "Hits PUBLIC_API_URL: health, login, ask; exit 1 on failure"
+ },
+ {
+  "path": "apps/web/vercel.json",
+  "step": "H",
+  "purpose": "SPA rewrite for Vercel hobby"
+ }
+]
