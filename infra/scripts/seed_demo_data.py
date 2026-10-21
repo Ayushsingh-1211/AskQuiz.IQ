@@ -6,11 +6,11 @@ repo_root = Path(__file__).resolve().parent.parent.parent
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
+from apps.api.app.config import get_settings
 from apps.api.app.db.session import get_db_context
 from apps.api.app.logging import get_logger
 from apps.worker.stages.asr import parse_srt_to_words
 from apps.worker.stages.chunk import create_chunks_for_video
-from apps.worker.stages.embed import embed_video_chunks
 
 logger = get_logger("infra.seed_demo")
 
@@ -24,6 +24,8 @@ def seed_demo_data() -> None:
     if not srt_path.exists():
         logger.warning(f"Demo subtitle file not found at {srt_path}")
         return
+
+    settings = get_settings()
 
     with get_db_context() as conn:
         with conn.cursor() as cur:
@@ -43,7 +45,7 @@ def seed_demo_data() -> None:
 
             demo_user_id = user["id"]
 
-            # 2. Check if demo video already exists
+            # 2. Check if demo video already exists with chunks
             cur.execute("SELECT id FROM videos WHERE id = %s", (DEMO_VIDEO_ID,))
             existing = cur.fetchone()
             if existing:
@@ -71,14 +73,18 @@ def seed_demo_data() -> None:
             )
         conn.commit()
 
-        # 3. Create chunks and compute embeddings
+        # 3. Create chunks and compute embeddings if configured
         logger.info(f"Seeding demo video chunks from {srt_path.name}...")
         words = parse_srt_to_words(srt_path)
         chunks = create_chunks_for_video(conn, DEMO_VIDEO_ID, words)
         logger.info(f"Created {len(chunks)} chunks for demo video")
 
-        embedded = embed_video_chunks(conn, DEMO_VIDEO_ID)
-        logger.info(f"Successfully embedded {embedded} chunks with E5 model for demo video")
+        if settings.EMBEDDING_BACKEND.lower() != "fts":
+            from apps.worker.stages.embed import embed_video_chunks
+            embedded = embed_video_chunks(conn, DEMO_VIDEO_ID)
+            logger.info(f"Successfully embedded {embedded} chunks with E5 model for demo video")
+        else:
+            logger.info("EMBEDDING_BACKEND=fts: skipping local embedding computation (FTS ready)")
 
 
 if __name__ == "__main__":

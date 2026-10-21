@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     WHISPER_COMPUTE: str = "int8"
 
     # Retrieval & Embedding
+    EMBEDDING_BACKEND: str = "local"  # "local" (vector+fts) or "fts" (cloud-safe PostgreSQL full-text search)
     EMBED_MODEL: str = "intfloat/multilingual-e5-small"
     RERANK_ENABLED: bool = False
     TOPK: int = 8

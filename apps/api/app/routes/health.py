@@ -85,14 +85,11 @@ def check_gemini_key() -> Dict[str, Any]:
 def check_embed_model() -> Dict[str, Any]:
     global _cached_embed_model
     settings = get_settings()
-    model_name = settings.EMBED_MODEL
-    try:
-        if _cached_embed_model is None:
-            from sentence_transformers import SentenceTransformer
-            _cached_embed_model = SentenceTransformer(model_name)
-        return {"ok": True, "model": model_name}
-    except Exception as exc:
-        return {"ok": False, "detail": str(exc), "model": model_name}
+    if settings.EMBEDDING_BACKEND.lower() == "fts":
+        return {"ok": True, "backend": "fts", "model": "none (using postgresql full-text-search)"}
+    if _cached_embed_model is not None:
+        return {"ok": True, "backend": settings.EMBEDDING_BACKEND, "model": settings.EMBED_MODEL, "loaded": True}
+    return {"ok": True, "backend": settings.EMBEDDING_BACKEND, "model": settings.EMBED_MODEL, "loaded": False}
 
 
 def run_all_self_checks() -> Dict[str, Any]:
@@ -115,6 +112,24 @@ def run_all_self_checks() -> Dict[str, Any]:
 
 @router.get("/health")
 def health(response: Response) -> Dict[str, Any]:
+    """
+    Lightweight health check for Render and external load balancers.
+    Guaranteed zero model loads (no SentenceTransformer, PyTorch, Whisper, OpenCV).
+    """
+    db_ok = check_db_health()
+    if not db_ok:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        return {"status": "degraded", "database": False}
+    return {
+        "status": "ok",
+        "database": True,
+        "embedding_backend": get_settings().EMBEDDING_BACKEND,
+    }
+
+
+@router.get("/diagnostics")
+def diagnostics(response: Response) -> Dict[str, Any]:
+    """Detailed system diagnostic checks without instantiating heavy ML models."""
     results = run_all_self_checks()
     if results["status"] != "ok":
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE

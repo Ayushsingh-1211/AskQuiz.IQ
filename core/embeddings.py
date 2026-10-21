@@ -2,12 +2,14 @@ from functools import lru_cache
 from typing import List
 from apps.api.app.config import get_settings
 
-settings = get_settings()
 _model = None
 
 
 def get_embedding_model():
     global _model
+    settings = get_settings()
+    if settings.EMBEDDING_BACKEND.lower() == "fts":
+        raise RuntimeError("SentenceTransformer model loading is disabled when EMBEDDING_BACKEND=fts")
     if _model is None:
         from sentence_transformers import SentenceTransformer
         _model = SentenceTransformer(settings.EMBED_MODEL)

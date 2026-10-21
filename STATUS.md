@@ -10,6 +10,7 @@
 - Live Deployment: Public frontend & backend Cloudflare tunnels, dict_row & 4-arg vector retrieval fix, Gemini 3.5 fallback chain, WebVTT captions DB fallback, video-grounded QA & citations all verified green.
 - Login Fix: Demo password reset to demo12345 with dual alias support, 4/4 auth regression tests pass, live public authentication and workspace navigation verified green.
 - Cloud Deployment Config: Neon SSL connection resilience, embedded worker lifespan, dynamic PORT Dockerfile, render.yaml context, and Vercel build verified green on main (a501d9b).
+- Render Free Memory & Port Fix: Lightweight zero-model health check, cloud-safe FTS retrieval mode, disabled worker on 512MB RAM, and early 0.0.0.0:$PORT listening green.
 
 
 

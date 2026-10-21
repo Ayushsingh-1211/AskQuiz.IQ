@@ -2,7 +2,10 @@ FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    DATA_DIR=/app/data
+    DATA_DIR=/app/data \
+    WEB_CONCURRENCY=1 \
+    EMBEDDING_BACKEND=fts \
+    EMBEDDED_WORKER=false
 
 WORKDIR /app
 
@@ -26,4 +29,4 @@ RUN mkdir -p /app/data
 
 EXPOSE 8000 10000
 
-CMD ["sh", "-c", "python -m uvicorn apps.api.app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "python -m uvicorn apps.api.app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]

@@ -1,7 +1,7 @@
 import threading
 import uuid
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Optional
+from typing import Any, AsyncGenerator, Dict, Optional
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from apps.api.app.config import get_settings
@@ -9,7 +9,6 @@ from apps.api.app.db.session import close_pool, run_migrations
 from apps.api.app.errors import register_error_handlers
 from apps.api.app.logging import get_logger, request_id_var, setup_logging
 from apps.api.app.routes import api_router
-from apps.api.app.routes.health import run_all_self_checks
 
 setup_logging()
 logger = get_logger("apps.api.main")
@@ -65,17 +64,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                 logger.warning(f"Could not start embedded worker: {exc}")
         else:
             logger.info("Embedded worker thread is already running")
+    else:
+        logger.info("Embedded worker thread disabled (EMBEDDED_WORKER=false)")
 
-    # 5. Run startup self-check
-    try:
-        check_results = run_all_self_checks()
-        if check_results["status"] == "ok":
-            logger.info("Startup self-check passed: all systems operational")
-        else:
-            logger.warning(f"Startup self-check degraded: {check_results['checks']}")
-    except Exception as exc:
-        logger.error(f"Error during startup self-check: {exc}")
-
+    logger.info("AskQuiz.IQ API startup complete — ready to accept requests immediately")
     yield
 
     logger.info("Shutting down AskQuiz.IQ API...")
@@ -95,6 +87,12 @@ def create_app() -> FastAPI:
         description="Pause & Ask Learning Assistant API",
         lifespan=lifespan,
     )
+
+    # Root health endpoints for fast cloud platform port/health detection
+    @app.get("/health", tags=["health"])
+    @app.get("/", tags=["health"])
+    def root_health() -> Dict[str, Any]:
+        return {"status": "ok"}
 
     # Middleware: Request ID injection
     @app.middleware("http")

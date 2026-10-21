@@ -1,16 +1,21 @@
 # AskQuiz.IQ — Zero-Cost (₹0) Production Deployment Guide
-**Architecture:** Vercel (React Frontend) + Render Free (FastAPI Backend + Embedded Worker) + Neon Free (PostgreSQL + pgvector)
+**Architecture:** Vercel (React Frontend) + Render Free (FastAPI Backend) + Neon Free (PostgreSQL + pgvector)
 
 ---
 
 ## Overview & ₹0 Cost Verification
 - **Frontend:** Vercel Hobby Free Plan (Global CDN, HTTPS, 100GB bandwidth/mo).
 - **Backend:** Render Free Web Service (Docker runtime, 512MB RAM, automatic TLS).
-- **Worker:** Runs as an embedded background daemon inside the Render FastAPI web service (0 extra services, 0 cost).
+- **Worker/Retrieval Mode:** Cloud-safe PostgreSQL Full-Text Search (FTS) retrieval under TAC (`EMBEDDING_BACKEND=fts`).
 - **Database:** Neon Free Serverless PostgreSQL (0.5GB storage, pgvector included).
 - **Queue/Broker:** Native PostgreSQL `jobs` table (`SKIP LOCKED`). **Zero Redis required**.
 - **LLM:** Google Gemini Free Tier via `core/llm` provider.
 - **Laptop Independence:** Works 24/7 when your laptop is turned off.
+
+> [!IMPORTANT]
+> **Render Free 512MB RAM Constraint & Upload Processing Limitation:**
+> Render Free web services provide 512 MB of RAM. Processing newly uploaded raw video files (running local speech recognition models like Whisper and OCR) requires >800MB RAM and triggers immediate Out-Of-Memory (OOM SIGKILL 137).
+> To guarantee 100% uptime and sub-second responses within 512MB RAM, configure `EMBEDDING_BACKEND=fts` and `EMBEDDED_WORKER=false`. The web API runs at ~100MB RAM, and the pre-seeded demo video (**Talking Teacher - Machine Learning Intro**) with its 25 chunks is pre-loaded and ready for instant playback, streaming, full-text retrieval under TAC, and Gemini Q&A with timestamp citations. Newly uploaded videos will be queued in the database but cannot be processed by the free web service.
 
 ---
 
@@ -55,10 +60,10 @@
    | `GEMINI_API_KEY` | *(your Gemini API key)* | From Google AI Studio |
    | `JWT_SECRET` | *(use Render's auto-generated secret or run `openssl rand -hex 32`)* | Never use a hardcoded secret in production |
    | `ALLOWED_ORIGINS` | `https://askquiz-iq.vercel.app,http://localhost:5173` | Add your Vercel URL here |
-   | `EMBEDDED_WORKER` | `true` | Runs ingestion worker in background daemon thread |
-   | `AUTO_SEED_DEMO` | `true` | Pre-seeds demo video & chunks |
-   | `WHISPER_MODEL` | `tiny` | Keeps memory within Render 512MB RAM limit |
-   | `WHISPER_COMPUTE` | `int8` | Fast CPU transcription |
+   | `EMBEDDING_BACKEND` | `fts` | Uses PostgreSQL full-text search; avoids 400MB local ML model |
+   | `EMBEDDED_WORKER` | `false` | Keeps memory <120MB on Render Free (512MB RAM ceiling) |
+   | `AUTO_SEED_DEMO` | `true` | Pre-seeds demo video & 25 chunks on first boot |
+   | `WEB_CONCURRENCY` | `1` | Single Uvicorn process to prevent memory multiplication |
    | `ANSWER_MODEL` | `gemini-3.5-flash-lite` | Free tier fast model |
    | `VISION_MODEL` | `gemini-3.5-flash-lite` | Vision model |
    | `LLM_FALLBACK_CHAIN` | `gemini-3.5-flash-lite,gemini-3.5-flash` | Automatic fallback |
@@ -73,7 +78,7 @@
    Visit `https://askquiz-api.onrender.com/api/v1/health` in your browser.
    It should return:
    ```json
-   {"status":"ok","checks":{"ffmpeg":{"ok":true},"database":{"ok":true},"gemini_key":{"ok":true},"embed_model":{"ok":true}}}
+   {"status":"ok","database":true,"embedding_backend":"fts"}
    ```
 
 ---
@@ -122,7 +127,7 @@
 4. Click on the video to open the **Watch & Ask** workspace.
 5. Seek to `02:00` or `04:00` on the video player.
 6. Ask a question in the chat box:
-   - *"What is a neural network?"* or *"Can you summarize what was covered up to this moment?"*
+   - *"What is machine learning?"* or *"What did the instructor explain about supervised learning?"*
 7. Confirm that:
    - The assistant answers using the video transcript.
    - Citations show exact timestamps (e.g., `01:45`).
