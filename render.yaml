@@ -3,6 +3,7 @@ services:
     name: askquiz-api
     runtime: docker
     dockerfilePath: ./infra/Dockerfile
+    dockerContext: .
     plan: free
     region: oregon
     healthCheckPath: /api/v1/health

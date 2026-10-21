@@ -16,12 +16,27 @@ _pool: Optional[ConnectionPool] = None
 
 @lru_cache()
 def get_effective_database_url() -> str:
+    """
+    Returns the normalized database connection string.
+    - Normalizes postgres:// to postgresql://
+    - Preserves remote database URLs (e.g. Neon, Render, Supabase) and SSL settings exactly
+    - Ensures sslmode=require for Neon databases if not explicitly provided
+    - Only attempts local port 5432 -> 5433 fallback for localhost/127.0.0.1 Docker instances
+    """
     settings = get_settings()
-    url = settings.DATABASE_URL
+    url = settings.DATABASE_URL.strip()
+
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
+
+    # For remote databases (Neon, Render, AWS, etc.), never rewrite port to 5433
     if "localhost" not in url and "127.0.0.1" not in url:
+        if ".neon.tech" in url and "sslmode" not in url:
+            delimiter = "&" if "?" in url else "?"
+            url = f"{url}{delimiter}sslmode=require"
         return url
+
+    # For local Docker setup: test port 5432, fallback to 5433 if needed
     try:
         with psycopg.connect(url, connect_timeout=1):
             return url
@@ -38,6 +53,11 @@ def get_effective_database_url() -> str:
 
 
 def get_pool() -> ConnectionPool:
+    """
+    Returns the connection pool configured for high-resilience serverless operation.
+    - check_connection validates idle connections before returning them
+    - max_idle and reconnect_timeout allow safe recovery when Neon compute wakes up
+    """
     global _pool
     if _pool is None:
         conninfo = get_effective_database_url()
@@ -46,7 +66,9 @@ def get_pool() -> ConnectionPool:
             min_size=1,
             max_size=10,
             open=True,
-            timeout=10,
+            timeout=30.0,
+            max_idle=300.0,
+            reconnect_timeout=30.0,
             check=ConnectionPool.check_connection,
             kwargs={"row_factory": dict_row},
         )

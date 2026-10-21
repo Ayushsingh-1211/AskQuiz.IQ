@@ -1,7 +1,7 @@
 import threading
 import uuid
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from apps.api.app.config import get_settings
@@ -14,20 +14,26 @@ from apps.api.app.routes.health import run_all_self_checks
 setup_logging()
 logger = get_logger("apps.api.main")
 
+_worker_thread: Optional[threading.Thread] = None
+_stop_worker_event: Optional[threading.Event] = None
+_demo_seeding_lock = threading.Lock()
+_demo_seeded = False
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    global _worker_thread, _stop_worker_event, _demo_seeded
     settings = get_settings()
     logger.info(f"Starting AskQuiz.IQ API on {settings.PUBLIC_API_URL}")
 
-    # 1. Run database migrations
+    # 1. Run database migrations safely
     try:
         run_migrations()
         logger.info("Database migrations complete")
     except Exception as exc:
         logger.error(f"Failed to apply database migrations at startup: {exc}")
 
-    # 2. Seed default users
+    # 2. Seed default users (idempotent, only if missing)
     try:
         from infra.scripts.seed_users import seed_users
         seed_users()
@@ -35,25 +41,30 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except Exception as exc:
         logger.warning(f"Could not verify/seed user accounts: {exc}")
 
-    # 3. Seed demo video & chunks if configured
-    if settings.AUTO_SEED_DEMO:
-        try:
-            from infra.scripts.seed_demo_data import seed_demo_data
-            seed_demo_data()
-            logger.info("Demo video and chunks verified/seeded")
-        except Exception as exc:
-            logger.warning(f"Could not seed demo video data: {exc}")
+    # 3. Seed demo video & chunks if configured (guarded against duplicate runs)
+    if settings.AUTO_SEED_DEMO and not _demo_seeded:
+        with _demo_seeding_lock:
+            if not _demo_seeded:
+                try:
+                    from infra.scripts.seed_demo_data import seed_demo_data
+                    seed_demo_data()
+                    _demo_seeded = True
+                    logger.info("Demo video and chunks verified/seeded")
+                except Exception as exc:
+                    logger.warning(f"Could not seed demo video data: {exc}")
 
-    # 4. Start embedded worker thread if enabled
-    stop_worker_event = threading.Event()
-    worker_thread = None
+    # 4. Start embedded worker thread if enabled (avoid duplicates if reloaded)
     if settings.EMBEDDED_WORKER:
-        try:
-            from apps.worker.runner import start_embedded_worker
-            worker_thread = start_embedded_worker(stop_worker_event)
-            logger.info("Embedded background worker thread active")
-        except Exception as exc:
-            logger.warning(f"Could not start embedded worker: {exc}")
+        if _worker_thread is None or not _worker_thread.is_alive():
+            try:
+                from apps.worker.runner import start_embedded_worker
+                _stop_worker_event = threading.Event()
+                _worker_thread = start_embedded_worker(_stop_worker_event)
+                logger.info("Embedded background worker thread active")
+            except Exception as exc:
+                logger.warning(f"Could not start embedded worker: {exc}")
+        else:
+            logger.info("Embedded worker thread is already running")
 
     # 5. Run startup self-check
     try:
@@ -68,7 +79,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
     logger.info("Shutting down AskQuiz.IQ API...")
-    stop_worker_event.set()
+    if _stop_worker_event:
+        _stop_worker_event.set()
+    if _worker_thread and _worker_thread.is_alive():
+        _worker_thread.join(timeout=3.0)
     close_pool()
 
 
@@ -96,10 +110,13 @@ def create_app() -> FastAPI:
 
     # CORS configuration
     origins = settings.allowed_origins_list
+    default_dev_origins = ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"]
+    allowed_origins = list(dict.fromkeys(origins + default_dev_origins))
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins if origins else ["*"],
-        allow_origin_regex=r"https://.*(\.trycloudflare\.com|\.vercel\.app|\.onrender\.com)|http://localhost(:\d+)?",
+        allow_origins=allowed_origins,
+        allow_origin_regex=r"^https://([a-zA-Z0-9-]+\.)*(vercel\.app|trycloudflare\.com|onrender\.com)(:\d+)?$|^http://(localhost|127\.0\.0\.1)(:\d+)?$",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

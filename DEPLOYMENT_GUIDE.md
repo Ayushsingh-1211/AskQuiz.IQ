@@ -36,7 +36,7 @@
 ## Step 2: Deploy Backend on Render Free (4 Minutes)
 
 1. Go to [https://render.com](https://render.com) and sign in with GitHub.
-2. Click **New +** at the top right and select **Web Service**.
+2. Click **New +** at the top right and select **Web Service** (or **Blueprint** using `render.yaml`).
 3. Select **Build and deploy from a Git repository** and connect:
    - Repository: `Ayushsingh-1211/AskQuiz.IQ`
 4. Configure the service:
@@ -46,17 +46,18 @@
    - **Root Directory:** *(leave blank)*
    - **Language / Runtime:** Select **Docker**
    - **Dockerfile Path:** `./infra/Dockerfile`
+   - **Docker Build Context:** `.` (root directory)
    - **Instance Type:** Select **Free** ($0/month)
-5. Scroll down to **Environment Variables** and add:
+5. Scroll down to **Environment Variables** and configure:
    | Key | Value | Notes |
    |---|---|---|
    | `DATABASE_URL` | *(paste your Neon URL from Step 1)* | Must include `?sslmode=require` |
    | `GEMINI_API_KEY` | *(your Gemini API key)* | From Google AI Studio |
-   | `JWT_SECRET` | *(any random 32+ character string)* | e.g. `secret-quiz-iq-jwt-token-key-2026` |
+   | `JWT_SECRET` | *(use Render's auto-generated secret or run `openssl rand -hex 32`)* | Never use a hardcoded secret in production |
    | `ALLOWED_ORIGINS` | `https://askquiz-iq.vercel.app,http://localhost:5173` | Add your Vercel URL here |
-   | `EMBEDDED_WORKER` | `true` | Runs ingestion worker in background |
+   | `EMBEDDED_WORKER` | `true` | Runs ingestion worker in background daemon thread |
    | `AUTO_SEED_DEMO` | `true` | Pre-seeds demo video & chunks |
-   | `WHISPER_MODEL` | `tiny` | Keeps memory within Render 512MB limit |
+   | `WHISPER_MODEL` | `tiny` | Keeps memory within Render 512MB RAM limit |
    | `WHISPER_COMPUTE` | `int8` | Fast CPU transcription |
    | `ANSWER_MODEL` | `gemini-3.5-flash-lite` | Free tier fast model |
    | `VISION_MODEL` | `gemini-3.5-flash-lite` | Vision model |
