@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     # Database & Storage
     DATABASE_URL: str = "postgresql://pause:pause@localhost:5432/pause"
     DATA_DIR: str = "./data"
+    EMBEDDED_WORKER: bool = True
+    AUTO_SEED_DEMO: bool = True
 
     # Auth & Security
     JWT_SECRET: str = "change-me"

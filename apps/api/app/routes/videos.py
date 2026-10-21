@@ -288,6 +288,12 @@ def stream_video(
         if candidate.exists():
             return range_streaming_response(request, candidate)
 
+    # Check eval dataset fallback for demo videos
+    if video_id == "1ba5b57f-4aad-489d-9948-3d6ab873055e":
+        eval_cand = Path("eval/dataset/talking_teacher.mp4").resolve()
+        if eval_cand.exists():
+            return range_streaming_response(request, eval_cand)
+
     raise NotFoundError(message="Stream media file not yet available")
 
 

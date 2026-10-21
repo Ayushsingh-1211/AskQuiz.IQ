@@ -20,7 +20,7 @@ export const Player: React.FC<PlayerProps> = ({
 }) => {
   const isYouTube = !!video.url && (video.url.includes('youtube.com') || video.url.includes('youtu.be'));
 
-  if (isYouTube && !video.stream_url) {
+  if (isYouTube && (!video.file_path || video.visual_unavailable)) {
     return (
       <YouTubePlayer
         url={video.url!}

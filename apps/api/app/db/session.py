@@ -18,6 +18,10 @@ _pool: Optional[ConnectionPool] = None
 def get_effective_database_url() -> str:
     settings = get_settings()
     url = settings.DATABASE_URL
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+    if "localhost" not in url and "127.0.0.1" not in url:
+        return url
     try:
         with psycopg.connect(url, connect_timeout=1):
             return url
@@ -43,6 +47,7 @@ def get_pool() -> ConnectionPool:
             max_size=10,
             open=True,
             timeout=10,
+            check=ConnectionPool.check_connection,
             kwargs={"row_factory": dict_row},
         )
     return _pool
@@ -92,7 +97,7 @@ def run_migrations() -> None:
 
     sql_files = sorted(migrations_dir.glob("*.sql"))
 
-    with psycopg.connect(conninfo, autocommit=True) as conn:
+    with psycopg.connect(conninfo, autocommit=True, connect_timeout=5) as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """

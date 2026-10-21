@@ -70,7 +70,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
           disabled={loading}
           style={{ width: '100%', padding: '12px', background: 'var(--accent-primary)', color: '#fff', fontWeight: 600, borderRadius: 'var(--radius-sm)', marginTop: '8px' }}
         >
-          {loading ? 'Signing in...' : 'Sign In'}
+          {loading ? 'Signing in (waking server)...' : 'Sign In'}
         </button>
 
         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '12px' }}>

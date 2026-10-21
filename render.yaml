@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: askquiz-api
+    runtime: docker
+    dockerfilePath: ./infra/Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: "https://askquiz-iq.vercel.app,http://localhost:5173"
+      - key: EMBEDDED_WORKER
+        value: "true"
+      - key: AUTO_SEED_DEMO
+        value: "true"
+      - key: ANSWER_MODEL
+        value: "gemini-3.5-flash-lite"
+      - key: VISION_MODEL
+        value: "gemini-3.5-flash-lite"
+      - key: LLM_FALLBACK_CHAIN
+        value: "gemini-3.5-flash-lite,gemini-3.5-flash"
+      - key: WHISPER_MODEL
+        value: "tiny"
+      - key: WHISPER_COMPUTE
+        value: "int8"
+      - key: DATA_DIR
+        value: "/app/data"

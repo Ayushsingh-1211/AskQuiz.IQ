@@ -1,3 +1,4 @@
+import threading
 import uuid
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -19,14 +20,42 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     settings = get_settings()
     logger.info(f"Starting AskQuiz.IQ API on {settings.PUBLIC_API_URL}")
 
-    # Run database migrations
+    # 1. Run database migrations
     try:
         run_migrations()
         logger.info("Database migrations complete")
     except Exception as exc:
         logger.error(f"Failed to apply database migrations at startup: {exc}")
 
-    # Run self-check
+    # 2. Seed default users
+    try:
+        from infra.scripts.seed_users import seed_users
+        seed_users()
+        logger.info("Default user accounts verified/seeded")
+    except Exception as exc:
+        logger.warning(f"Could not verify/seed user accounts: {exc}")
+
+    # 3. Seed demo video & chunks if configured
+    if settings.AUTO_SEED_DEMO:
+        try:
+            from infra.scripts.seed_demo_data import seed_demo_data
+            seed_demo_data()
+            logger.info("Demo video and chunks verified/seeded")
+        except Exception as exc:
+            logger.warning(f"Could not seed demo video data: {exc}")
+
+    # 4. Start embedded worker thread if enabled
+    stop_worker_event = threading.Event()
+    worker_thread = None
+    if settings.EMBEDDED_WORKER:
+        try:
+            from apps.worker.runner import start_embedded_worker
+            worker_thread = start_embedded_worker(stop_worker_event)
+            logger.info("Embedded background worker thread active")
+        except Exception as exc:
+            logger.warning(f"Could not start embedded worker: {exc}")
+
+    # 5. Run startup self-check
     try:
         check_results = run_all_self_checks()
         if check_results["status"] == "ok":
@@ -39,6 +68,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
     logger.info("Shutting down AskQuiz.IQ API...")
+    stop_worker_event.set()
     close_pool()
 
 
@@ -69,7 +99,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins if origins else ["*"],
-        allow_origin_regex=r"https://.*\.trycloudflare\.com",
+        allow_origin_regex=r"https://.*(\.trycloudflare\.com|\.vercel\.app|\.onrender\.com)|http://localhost(:\d+)?",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
